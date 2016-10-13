@@ -1,0 +1,44 @@
+#! /bin/sh
+
+if [ $# -eq 0 ]
+    then
+    set $PWD
+fi
+
+for ARG in $*
+  do
+  case $ARG in
+      --prof=*)
+	  PROFUNDIDADE=`echo $ARG | cut -f 2 -d '='`
+	  ;;
+      *)
+	  if [ -d $ARG ]
+	      then
+	      CONT=${PROFUNDIDADE=0}
+	      while [ $CONT -gt 0 ]
+		do
+		echo -n "  "
+		CONT=`expr $CONT - 1`
+	      done
+	      echo "+$ARG"
+	      cd $ARG
+	      for NAME in *
+		do
+		bash $HOME/Documentos/EA872/arqlab1/atividades/tree --prof=`expr $PROFUNDIDADE + 1` $NAME
+	      done
+	  else
+	      if [ -f $ARG ]
+		  then
+		  CONT=${PROFUNDIDADE=0}
+		  while [ $CONT -gt 0 ]
+		    do
+		    echo -n "  "
+		    CONT=`expr $CONT - 1`
+		  done
+		  echo "-$ARG"
+	      fi
+	  fi
+	  ;;
+  esac
+done
+  

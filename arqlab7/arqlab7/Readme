@@ -1,0 +1,7 @@
+bison -d parser.y
+
+flex parser.l
+
+gcc -o servidor servidor.c parser.tab.c lex.yy.c -ly -lfl
+
+./servidor ../meu-webspace ../req/req_1.txt ../resp/resp_1.txt ../registro.txt

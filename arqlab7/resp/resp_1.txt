@@ -1,0 +1,17 @@
+HTTP/1.1 200 OK
+Date: Sun, 19 Oct 2014 08:55:36 BRST
+Server: Servidor HTTP ver 0.1 de XXX 
+Connection: keep-alive
+Content-Type: text/html
+Last-Modified: Sat, 18 Oct 2014 18:40:44 BRT
+Content-Length: 138
+
+<!DOCTYPE html>
+<html> 
+ 	<head>
+		 <title>meu-webspace/index.html</title>
+	 </head>
+	 <body>
+		meu-webspace/index.html
+ 	</body>
+</html>

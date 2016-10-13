@@ -1,0 +1,16 @@
+#! /bin/sh 
+
+case $# in 
+    0|1|[3-9]) echo  Uso: classifica arquivo1 arquivo2  1>&2; exit 2 ;; 
+esac 
+total=0; perdida=0; 
+while read novalinha 
+  do total=`expr $total + 1` 
+  case "$novalinha" in 
+      *[A-Za-z]*) echo "$novalinha" >> $1 ;; 
+      *[0-9]*) echo "$novalinha" >> $2 ;; 
+      '<>') break;; 
+      *) perdida=`expr $perdida + 1`;; 
+  esac 
+done 
+echo "`expr $total - 1` linha(s) lida(s), $perdida linha(s) nao aproveitada(s)"

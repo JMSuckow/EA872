@@ -1,0 +1,3 @@
+echo "Entre com o seu nome:"
+read name
+echo "Prazer em conhecê­lo(a), $name"
