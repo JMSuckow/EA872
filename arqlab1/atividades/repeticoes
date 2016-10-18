@@ -1,0 +1,31 @@
+#! /bin/sh
+
+while [ $# -gt 0 ]
+  do
+  case $1 in
+      --repeticoes=*)
+	repeticoes=`echo $1 | cut -f 2 -d '='`;
+	shift
+	  ;;
+	
+	--atraso=*)
+	atraso=`echo $1 | cut -f 2 -d '='`
+ 	shift
+	;;
+
+      *)
+	break;;
+  esac
+done
+
+while [ $# -gt 0 ]
+do
+	cont=${repeticoes-1};
+	while [ $cont -gt 0 ]
+	do
+		sleep ${atraso-0}
+		echo `$1`;
+		cont=`expr $cont - 1`;
+  	done
+	shift;
+done

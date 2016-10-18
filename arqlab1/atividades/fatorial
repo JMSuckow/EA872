@@ -1,0 +1,22 @@
+#! /bin/sh
+
+if [ $# -eq 0 ]
+    then
+    echo "Uso: fatorial n";
+elif [ ! $1 -gt 0 ]
+	then
+	echo "Erro: Número deve ser positivo";
+elif [ $1 -eq 1 ]
+	then
+	echo 1;
+else
+	numero=$1; 
+	params=`expr $numero - 1`;
+	volta=`bash fatorial $params`;
+	case $volta in
+		*[0-9]*)
+		result=`expr $numero \\* $volta`;
+		echo $result;
+	;;
+	esac
+fi

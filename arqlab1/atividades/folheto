@@ -2,6 +2,8 @@
 
 case $# in 
     0) set `date`; m=$2; y=$6;  
+	echo $m;
+	echo $y;
 	case $m in  
 	    Feb) m=Fev;; 
 	    Apr) m=Abr;; 

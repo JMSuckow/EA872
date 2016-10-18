@@ -1,0 +1,14 @@
+--- REQUEST ---
+
+colocar aqui o conteúdo do arquivo 'request'
+--- RESPONSE ---
+
+colocar aqui o conteúdo do arquivo 'response' (mas só o cabeçalho da mesma, sem o conteúdo do recursos solicitado, no caso de GET)
+********************************************************************
+--- REQUEST ---
+
+colocar aqui o conteúdo do arquivo 'request'
+--- RESPONSE ---
+
+colocar aqui o conteúdo do arquivo 'response' (mas só o cabeçalho da mesma, sem o conteúdo do recursos solicitado, no caso de GET)
+********************************************************************

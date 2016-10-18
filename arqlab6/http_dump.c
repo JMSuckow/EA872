@@ -123,3 +123,4 @@ char **arg_valor;
     printf("O servidor terminou com erro.\n");
     exit(5);
 }
+

@@ -8,5 +8,6 @@
 		printf("Léxico: yytext (texto) = %s \t yyval (valor) =  %d\n", yytext, yylval);
 		return (INTEIRO);
 	}
+
 \n	return ('\n');
 %%
