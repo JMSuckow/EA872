@@ -1,0 +1,14 @@
+#! /bin/sh
+
+for DIRPATH in `echo $PATH | sed 's/:/ /g'` # Consulte o manual do sed
+do
+  if [ ! -d $DIRPATH ] 
+      then
+      if [ -f $DIRPATH ]
+	  then
+	  echo "$DIRPATH nao e diretorio, e um arquivo"
+	  else
+	  echo "$DIRPATH nao existe"
+      fi
+  fi
+done

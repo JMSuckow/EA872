@@ -1,0 +1,3 @@
+echo "Entre com um comando:"
+read comando
+eval $comando

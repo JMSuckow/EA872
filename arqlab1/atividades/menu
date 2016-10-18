@@ -1,0 +1,23 @@
+#! /bin/sh 
+
+echo menu 
+stop=0 
+while test $stop -eq 0 
+  do 
+  echo 
+  cat <<FIMDOMENU
+1 : imprime a data 
+2,3 : imprime o diretorio corrente 
+4 : fim
+FIMDOMENU
+  echo 
+  echo 'opcao? ' 
+  read op 
+  echo 
+  case $op in 
+      1) date;; 
+      2|3) pwd;; 
+      4) stop=1;; 
+      *) echo  opcao invalida! ;; 
+  esac 
+done

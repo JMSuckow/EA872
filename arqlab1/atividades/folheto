@@ -1,0 +1,33 @@
+#! /bin/sh 
+
+case $# in 
+    0) set `date`; m=$2; y=$6;  
+	case $m in  
+	    Feb) m=Fev;; 
+	    Apr) m=Abr;; 
+	    May) m=Mai;; 
+	    Aug) m=Ago;; 
+	    Sep) m=Set;; 
+	    Oct) m=Out;; 
+	    Dec) m=Dez;; 
+	esac;; 
+    1) m=$1; set `date`; y=$6;;  
+    *) m=$1; y=$2 ;;  
+esac 
+case $m in 
+    jan*|Jan*) m=1;; 
+    fev*|Fev*) m=2;; 
+    mar*|Mar*) m=3;; 
+    abr*|Abr*) m=4;; 
+    mai*|Mai*) m=5;; 
+    jun*|Jun*) m=6;; 
+    jul*|Jul*) m=7;; 
+    ago*|Ago*) m=8;; 
+    set*|Set*) m=9;; 
+    out*|Out*) m=10;; 
+    nov*|Nov*) m=11;; 
+    dez*|Dez*) m=12;; 
+    [1-9]|10|11|12) ;; 
+    *) y=$m; m="";; 
+esac 
+/usr/bin/cal $m $y

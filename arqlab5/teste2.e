@@ -1,0 +1,14 @@
+total 128
+ 8 a.c
+ 8 b1.c
+ 8 b2.c
+ 8 c.c
+24 d
+ 8 d.c
+24 e
+ 8 e.c
+ 8 g.c
+ 8 h.c
+ 8 teste.d
+ 8 teste1.e
+ 0 teste2.e
