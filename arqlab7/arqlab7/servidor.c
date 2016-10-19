@@ -10,8 +10,11 @@
 #include <unistd.h>
 
 
-#include "parser.h"
-#include "parser.tab.h"
+//#include "parser.h"
+//#include "parser.tab.h"
+
+#include "custom_parser.h"
+#include "custom_parser.tab.h"
 
 extern FILE* yyin;
 
@@ -73,7 +76,7 @@ void httpServer_setServerRoot(char *root)
 * 	requestFile: original request file
 * 	responseFile: build response into it
 */
-void buildResponse(HttpRequest *requestList, char *request, int responseCode, FILE* requestFile, FILE* responseFile)
+void buildResponse(HttpRequestList *requestList, char *request, int responseCode, FILE* requestFile, FILE* responseFile)
 {
 	fprintf(responseFile, "HTTP/1.1 %d ", responseCode);
 	switch (responseCode)
@@ -81,38 +84,61 @@ void buildResponse(HttpRequest *requestList, char *request, int responseCode, FI
 		case OK:
 			fprintf(responseFile, "OK\r\n");
 			break;
-		//NOT_FOUND,FORBIDDEN,ETC
+        case NOT_FOUND:
+            fprintf(responseFile, "NOT FOUND\r\n");
+            break;
+        case FORBIDDEN:
+            fprintf(responseFile, "FORBIDDEN\r\n");
+            break;
 	}
 
-	// current date, this is only an example
-	fprintf(responseFile, "Date: Sun, 19 Oct 2014 08:55:36 BRST\r\n");
+    time_t rawtime;
+    char buf[80];
+    
+    time( &rawtime );
+    
+    strftime(buf,80,"%a, %d %b %Y %H:%M:%S %Z", localtime( &rawtime ));
+	fprintf(responseFile, "Date: %s\r\n", buf);
 
-	fprintf(responseFile, "Server: Servidor HTTP ver 0.1 de XXX \r\n");
+	fprintf(responseFile, "Server: Servidor HTTP ver 0.1 de Joao Marcos \r\n");
 
 	//print connection type using requestList, this is only an example
-	fprintf(responseFile, "Connection: keep-alive\r\n");	
+	fprintf(responseFile, "Connection: %s\r\n", httpParser_getParams(CONNECTION)->param);
 	
-	if (request=="GET")
+	if (strcmp(request,"GET")==0 || strcmp(request,"HEAD")==0 )
 	{
 		fprintf(responseFile, "Content-Type: text/html\r\n");
+        
+        struct stat statbuff;
+        stat(resourcePath, &statbuff);
+        
 		switch (responseCode)
 		{				
 			case OK:
-				// this is only an example, date from "resourcePath"
-				fprintf(responseFile, "Last-Modified: Sat, 18 Oct 2014 18:40:44 BRT\r\n");	
+                
+                strftime(buf, 80, "%a, %d %b %Y %H:%M:%S %Z", localtime(&(statbuff.st_ctime)));
+
+				fprintf(responseFile, "Last-Modified: %s\r\n", buf);
 				break;
+            case NOT_FOUND:
+                fprintf(responseFile, "File not found");
+                break;
+            case FORBIDDEN:
+                fprintf(responseFile, "Access Forbidden");
+                break;
+            default: break;
 			//case NOT_FOUND,FORBIDDEN, etc
 		}
 			
-		struct stat statbuff;
-		stat(resourcePath, &statbuff);
 		fprintf(responseFile, "Content-Length: %d\r\n\r\n", (int)statbuff.st_size);
 		
-		int fid;					
-		fid = open(resourcePath, O_RDONLY);
-		read(fid, resourcePath, statbuff.st_size);
-		fwrite(resourcePath, sizeof(char), statbuff.st_size, responseFile);
-		close(fid);
+        if(!strcmp(request,"GET")){
+            int fid;
+            fid = open(resourcePath, O_RDONLY);
+            read(fid, resourcePath, statbuff.st_size);
+            fwrite(resourcePath, sizeof(char), statbuff.st_size, responseFile);
+            close(fid);
+        }
 	}
 	//else -> HEAD, ETC
 
@@ -126,15 +152,19 @@ void buildResponse(HttpRequest *requestList, char *request, int responseCode, FI
 * 	request: original request file
 * 	response: file to save response
 */
-void httpServer_answerRequest(HttpRequest *requestList, FILE *request, FILE* response)
+void httpServer_answerRequest(HttpRequestList *requestList, FILE *request, FILE* response)
 {	
 	int code;
 
-	if (!strcmp(requestList->type, "GET"))
+	if (!strcmp(requestList->cmd, "GET"))
 	{
-		code = testResource(serverRoot, requestList->resource);
+		code = testResource(serverRoot, requestList->params->param);
 		buildResponse(requestList, "GET", code, request, response);
-	}
+    }else if (!strcmp(requestList->cmd, "HEAD"))
+    {
+        code = testResource(serverRoot, requestList->params->param);
+        buildResponse(requestList, "HEAD", code, request, response);
+    }
 	//else if ("HEAD", "OPTIONS", etc)	
 }
 
@@ -164,25 +194,25 @@ int testResource(char *serverRoot, char *resource)
     //Adquiri os dados do arquivo
     struct stat fileStat;
     if(stat(resourcePath,&fileStat) < 0){
-        printf("ERRO %d: Not Found\n", NOT_FOUND);
+        //printf("ERRO %d: Not Found\n", NOT_FOUND);
         return NOT_FOUND;
     }
     
     //Verifica permissao de leitura
     if (!(fileStat.st_mode & S_IRUSR)){
-        printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
+        //printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
         return FORBIDDEN;
     }
     
     if(!(S_ISDIR(fileStat.st_mode))){
         //ARQUIVO
-        read_and_print_file(resourcePath, fileStat);
+        //read_and_print_file(resourcePath, fileStat);
         return OK;
     }else{
         //DIRETORIO
         //Verifica permissao de varredura
         if (!((fileStat.st_mode & S_IXUSR))){
-            printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
+            //printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
             return FORBIDDEN;
         }
         else{
@@ -195,21 +225,21 @@ int testResource(char *serverRoot, char *resource)
 
             //Verifica existenci a de index.html e welcome.html
             if(stat(strIndex,&indexStat) < 0 && stat(strWelcome,&welcomeStat)){
-                printf("ERRO %d: Not Found\n", NOT_FOUND);
+                //printf("ERRO %d: Not Found\n", NOT_FOUND);
                 return NOT_FOUND;
             }
             
             //Verifica a permissao de leitura de index.html e welcome.html
             if (!((indexStat.st_mode & S_IRUSR) && (welcomeStat.st_mode & S_IRUSR))){
-                printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
+                //printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
                 return FORBIDDEN;
             }
             
             if (indexStat.st_mode & S_IRUSR){
-                read_and_print_file(strIndex, indexStat);
+                //read_and_print_file(strIndex, indexStat);
                 return OK;
             }else if (welcomeStat.st_mode & S_IRUSR){
-                read_and_print_file(strWelcome, welcomeStat);
+                //read_and_print_file(strWelcome, welcomeStat);
                 return OK;
             }
         }
@@ -243,7 +273,7 @@ void httpServer_addToLog(FILE* log, FILE* request, FILE* response)
 
 main(int argc, char **argv) 
 { 
-	HttpRequest *requestList; 
+	HttpRequestList *requestList;
 	FILE *request, *response, *log; 
 
 	// prepare webspace 
@@ -261,7 +291,7 @@ main(int argc, char **argv)
 	{ 
 		requestList = httpParser_getRequestList(); 
 		httpServer_answerRequest(requestList, request, response); 	
-		httpParser_printRequestList(requestList); 
+		httpParser_printRequestList(requestList);
 	} 
 	//else ERROR
 		
