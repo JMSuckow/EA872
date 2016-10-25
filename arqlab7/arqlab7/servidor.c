@@ -272,7 +272,7 @@ int testResource(char *serverRoot, char *resource)
             }
             
             //Verifica a permissao de leitura de index.html e welcome.html
-            if (!((indexStat.st_mode & S_IRUSR) && (welcomeStat.st_mode & S_IRUSR))){
+            if (!(indexStat.st_mode & S_IRUSR) && !(welcomeStat.st_mode & S_IRUSR)){
                 return FORBIDDEN;
             }
             
@@ -321,7 +321,6 @@ void httpServer_addToLog(FILE* log, FILE* request, FILE* response)
         int i;
         for(i = 0; i < res - 1; i++){
             if(buf[i] == '\n' && buf[i + 1] == '\n'){
-                printf("stop");
                 buf[i + 1] = 0; break;
             }
         }
