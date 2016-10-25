@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+Date: Mon, 24 Oct 2016 23:36:16 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 69
+Last-Modified: Mon, 24 Oct 2016 23:16:10 BRST
+
+<html><head><title>Texto 1</title></head><body>Texto 1</body></html>

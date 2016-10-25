@@ -10,9 +10,6 @@
 #include <unistd.h>
 
 
-//#include "parser.h"
-//#include "parser.tab.h"
-
 #include "custom_parser.h"
 #include "custom_parser.tab.h"
 
@@ -23,8 +20,11 @@ static char serverRoot[256];
 #define PATH_OFFSET 20
 
 #define OK	200
+#define BAD_REQUEST 400
 #define NOT_FOUND 404
 #define FORBIDDEN 403
+#define NOT_ALLOWED 405
+#define NOT_IMPLEMENTED 501
 
 
 static char *resourcePath;
@@ -78,6 +78,7 @@ void httpServer_setServerRoot(char *root)
 */
 void buildResponse(HttpRequestList *requestList, char *request, int responseCode, FILE* requestFile, FILE* responseFile)
 {
+    
 	fprintf(responseFile, "HTTP/1.1 %d ", responseCode);
 	switch (responseCode)
 	{
@@ -89,6 +90,15 @@ void buildResponse(HttpRequestList *requestList, char *request, int responseCode
             break;
         case FORBIDDEN:
             fprintf(responseFile, "FORBIDDEN\r\n");
+            break;
+        case BAD_REQUEST:
+            fprintf(responseFile, "BAD REQUEST\r\n");
+            break;
+        case NOT_ALLOWED:
+            fprintf(responseFile, "NOT ALLOWED\r\n");
+            break;
+        case NOT_IMPLEMENTED:
+            fprintf(responseFile, "NOT IMPLEMENTED\r\n");
             break;
 	}
 
@@ -102,15 +112,26 @@ void buildResponse(HttpRequestList *requestList, char *request, int responseCode
 
 	fprintf(responseFile, "Server: Servidor HTTP ver 0.1 de Joao Marcos \r\n");
 
-	//print connection type using requestList, this is only an example
-	fprintf(responseFile, "Connection: %s\r\n", httpParser_getParams(CONNECTION)->param);
+	if(requestList != NULL)
+        fprintf(responseFile, "Connection: %s\r\n", httpParser_getParams(CONNECTION)->param);
+    else
+        fprintf(responseFile, "Connection: close\r\n");
 	
-	if (strcmp(request,"GET")==0 || strcmp(request,"HEAD")==0 )
+    fprintf(responseFile, "Content-Type: text/html\r\n");
+    
+    if(responseCode == BAD_REQUEST){
+        
+        fprintf(responseFile, "\n\n<html><head>\r\n<title>400 Bad Request</title>\r\n</head><body>\r\n<h1>Bad Request</h1>\r\n</body></html>");
+        
+    }
+    else if (strcmp(request,"GET")==0 || strcmp(request,"HEAD")==0 )
 	{
-		fprintf(responseFile, "Content-Type: text/html\r\n");
+		
         
         struct stat statbuff;
         stat(resourcePath, &statbuff);
+        
+        fprintf(responseFile, "Content-Length: %d\r\n", (int)statbuff.st_size);
         
 		switch (responseCode)
 		{				
@@ -118,29 +139,51 @@ void buildResponse(HttpRequestList *requestList, char *request, int responseCode
                 
                 strftime(buf, 80, "%a, %d %b %Y %H:%M:%S %Z", localtime(&(statbuff.st_ctime)));
 
-				fprintf(responseFile, "Last-Modified: %s\r\n", buf);
+				fprintf(responseFile, "Last-Modified: %s\r\n\n", buf);
+                
+                if(!strcmp(request,"GET")){
+                    
+                    int fid;
+                    fid = open(resourcePath, O_RDONLY);
+                    read(fid, resourcePath, statbuff.st_size);
+                    fwrite(resourcePath, sizeof(char), statbuff.st_size, responseFile);
+                    close(fid);
+                }
+                
 				break;
             case NOT_FOUND:
-                fprintf(responseFile, "File not found");
+                
+                if(!strcmp(request,"GET")){
+                    
+                    fprintf(responseFile, "\n\n<html><head>\r\n<title>404 Not Found</title>\r\n</head><body>\r\n<h1>Not Found</h1>\r\n</body></html>");
+                }
+                
                 break;
             case FORBIDDEN:
-                fprintf(responseFile, "Access Forbidden");
+                
+                if(!strcmp(request,"GET")){
+                    
+                     fprintf(responseFile, "\n\n<html><head>\r\n<title>403 Forbidden</title>\r\n</head><body>\r\n<h1>Forbidden</h1>\r\n</body></html>");
+                }
+                
                 break;
             default: break;
-			//case NOT_FOUND,FORBIDDEN, etc
+
 		}
 			
-		fprintf(responseFile, "Content-Length: %d\r\n\r\n", (int)statbuff.st_size);
-		
-        if(!strcmp(request,"GET")){
-            int fid;
-            fid = open(resourcePath, O_RDONLY);
-            read(fid, resourcePath, statbuff.st_size);
-            fwrite(resourcePath, sizeof(char), statbuff.st_size, responseFile);
-            close(fid);
-        }
 	}
-	//else -> HEAD, ETC
+    else if(!strcmp(requestList->cmd, "OPTIONS") || !strcmp(requestList->cmd, "TRACE")
+            || !strcmp(requestList->cmd, "POST") || !strcmp(requestList->cmd, "DELETE")){
+        
+        fprintf(responseFile, "\n\n<html><head>\r\n<title>405 Method Not Allowed</title>\r\n</head><body>\r\n<h1>Method Not Allowed</h1>\r\n</body></html>");
+        
+    }
+    
+    else if(responseCode == NOT_IMPLEMENTED){
+        
+        fprintf(responseFile, "\n\n<html><head>\r\n<title>501 Method Not Implemented</title>\r\n</head><body>\r\n<h1>Method Not Implemented</h1>\r\n</body></html>");
+        
+    }
 
 }
 
@@ -155,17 +198,30 @@ void buildResponse(HttpRequestList *requestList, char *request, int responseCode
 void httpServer_answerRequest(HttpRequestList *requestList, FILE *request, FILE* response)
 {	
 	int code;
-
-	if (!strcmp(requestList->cmd, "GET"))
-	{
-		code = testResource(serverRoot, requestList->params->param);
-		buildResponse(requestList, "GET", code, request, response);
-    }else if (!strcmp(requestList->cmd, "HEAD"))
-    {
-        code = testResource(serverRoot, requestList->params->param);
-        buildResponse(requestList, "HEAD", code, request, response);
+    
+    if(requestList != NULL){
+        if (!strcmp(requestList->cmd, "GET"))
+        {
+            code = testResource(serverRoot, requestList->params->param);
+            buildResponse(requestList, "GET", code, request, response);
+        }else if (!strcmp(requestList->cmd, "HEAD"))
+        {
+            code = testResource(serverRoot, requestList->params->param);
+            buildResponse(requestList, "HEAD", code, request, response);
+        }else if(!strcmp(requestList->cmd, "OPTIONS") || !strcmp(requestList->cmd, "TRACE")
+             || !strcmp(requestList->cmd, "POST") || !strcmp(requestList->cmd, "DELETE")){
+            code = NOT_ALLOWED;
+            buildResponse(requestList, requestList->cmd, code, request, response);
+        
+        }else{
+            code = NOT_IMPLEMENTED;
+            buildResponse(requestList, requestList->cmd, code, request, response);
+        }
+    }else{
+        code = BAD_REQUEST;
+        buildResponse(NULL, "", code, request, response);
     }
-	//else if ("HEAD", "OPTIONS", etc)	
+
 }
 
 /* Function testResource()	
@@ -177,42 +233,29 @@ int testResource(char *serverRoot, char *resource)
 	int resourceSize = strlen(serverRoot) + strlen(resource) + PATH_OFFSET;
 	resourcePath = (char *)malloc(resourceSize*sizeof(char));
 	sprintf(resourcePath, "%s%s", serverRoot, resource);
-
-	/*if (stat(resourcePath, &statbuf) == -1) { 
-
-	} 
-	else { 
-		switch (statbuf.st_mode & S_IFMT) { 			
-			case S_IFREG: 
-				returnValue = OK;
-				break; 			
-		}
-	}*/
 	
+    printf("%s",resourcePath);
+    
 	int file,dir, i;
     
-    //Adquiri os dados do arquivo
+    //Adquire os dados do arquivo
     struct stat fileStat;
     if(stat(resourcePath,&fileStat) < 0){
-        //printf("ERRO %d: Not Found\n", NOT_FOUND);
         return NOT_FOUND;
     }
     
     //Verifica permissao de leitura
     if (!(fileStat.st_mode & S_IRUSR)){
-        //printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
         return FORBIDDEN;
     }
     
     if(!(S_ISDIR(fileStat.st_mode))){
         //ARQUIVO
-        //read_and_print_file(resourcePath, fileStat);
         return OK;
     }else{
         //DIRETORIO
         //Verifica permissao de varredura
         if (!((fileStat.st_mode & S_IXUSR))){
-            //printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
             return FORBIDDEN;
         }
         else{
@@ -223,28 +266,26 @@ int testResource(char *serverRoot, char *resource)
             strcpy(strIndex,resourcePath); strcat(strIndex,"/index.html");
             strcpy(strWelcome,resourcePath); strcat(strWelcome,"/welcome.html");
 
-            //Verifica existenci a de index.html e welcome.html
+            //Verifica existencia de index.html e welcome.html
             if(stat(strIndex,&indexStat) < 0 && stat(strWelcome,&welcomeStat)){
-                //printf("ERRO %d: Not Found\n", NOT_FOUND);
                 return NOT_FOUND;
             }
             
             //Verifica a permissao de leitura de index.html e welcome.html
             if (!((indexStat.st_mode & S_IRUSR) && (welcomeStat.st_mode & S_IRUSR))){
-                //printf("ERRO %d: FORBIDDEN\n", FORBIDDEN);
                 return FORBIDDEN;
             }
             
             if (indexStat.st_mode & S_IRUSR){
-                //read_and_print_file(strIndex, indexStat);
                 return OK;
             }else if (welcomeStat.st_mode & S_IRUSR){
-                //read_and_print_file(strWelcome, welcomeStat);
                 return OK;
             }
         }
 
     }
+    
+    return -1;
 
 }
 
@@ -262,16 +303,42 @@ void httpServer_addToLog(FILE* log, FILE* request, FILE* response)
 	fseek(log, 0L, SEEK_END);
 
 	fprintf(log, "--- REQUEST ---\r\n\r\n");
-	fprintf(log,"colocar aqui o conteúdo do arquivo 'request'");
+    
+    char buf[201];
+    fseek(request, 0L, SEEK_SET);
+    
+    while (!feof(request)) {
+        size_t res = fread(buf, 1, (sizeof buf)-1, request);
+        buf[res] = 0;
+        fprintf(log, "%s", buf);
+    }
 
+    fprintf(log, "\r\n--- RESPONSE ---\r\n\r\n");
+    fseek(response, 0L, SEEK_SET);
+    
+    while (!feof(response)) {
+        size_t res = fread(buf, 1, (sizeof buf)-1, response);
+        int i;
+        for(i = 0; i < res - 1; i++){
+            if(buf[i] == '\n' && buf[i + 1] == '\n'){
+                printf("stop");
+                buf[i + 1] = 0; break;
+            }
+        }
+        if(buf[i+1] == 0 && i != res-1){
+            fprintf(log, "%s", buf);
+            break;
+        }else{
+            buf[res] = 0;
+            fprintf(log, "%s", buf);
+        }
 
-	fprintf(log, "\r\n--- RESPONSE ---\r\n\r\n");
-	fprintf(log,"colocar aqui o conteúdo do arquivo 'response' (mas só o cabeçalho da mesma, sem o conteúdo do recursos solicitado, no caso de GET)");
+    }
 	
 	fprintf(log,"\n********************************************************************\r\n");
 }
 
-main(int argc, char **argv) 
+int main(int argc, char **argv)
 { 
 	HttpRequestList *requestList;
 	FILE *request, *response, *log; 
@@ -291,9 +358,12 @@ main(int argc, char **argv)
 	{ 
 		requestList = httpParser_getRequestList(); 
 		httpServer_answerRequest(requestList, request, response); 	
-		httpParser_printRequestList(requestList);
-	} 
-	//else ERROR
+		//httpParser_printRequestList(requestList);
+    }
+    else{ // ERROR Bad Request
+        httpServer_answerRequest(NULL, request, response);
+    }
+	
 		
 	httpServer_addToLog(log, request, response); 
 }

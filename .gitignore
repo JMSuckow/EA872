@@ -1,0 +1,8 @@
+# Lex and Yacc
+lex.yy.c
+*.tab.c
+*.tab.h
+
+
+# Other
+*~

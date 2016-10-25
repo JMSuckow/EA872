@@ -1,0 +1,12 @@
+HTTP/1.1 400 BAD REQUEST
+Date: Mon, 24 Oct 2016 23:36:25 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: close
+Content-Type: text/html
+
+
+<html><head>
+<title>400 Bad Request</title>
+</head><body>
+<h1>Bad Request</h1>
+</body></html>

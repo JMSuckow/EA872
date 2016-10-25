@@ -1,14 +1,213 @@
 --- REQUEST ---
 
-colocar aqui o conteúdo do arquivo 'request'
+GET /dir1 HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
 --- RESPONSE ---
 
-colocar aqui o conteúdo do arquivo 'response' (mas só o cabeçalho da mesma, sem o conteúdo do recursos solicitado, no caso de GET)
+HTTP/1.1 404 NOT FOUND
+Date: Mon, 24 Oct 2016 23:36:07 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 204
+
 ********************************************************************
 --- REQUEST ---
 
-colocar aqui o conteúdo do arquivo 'request'
+GET /dir2 HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
 --- RESPONSE ---
 
-colocar aqui o conteúdo do arquivo 'response' (mas só o cabeçalho da mesma, sem o conteúdo do recursos solicitado, no caso de GET)
+HTTP/1.1 403 FORBIDDEN
+Date: Mon, 24 Oct 2016 23:36:11 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 68
+
+********************************************************************
+--- REQUEST ---
+
+GET /dir1/dir11 HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
+--- RESPONSE ---
+
+HTTP/1.1 404 NOT FOUND
+Date: Mon, 24 Oct 2016 23:36:14 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 68
+
+********************************************************************
+--- REQUEST ---
+
+GET /dir1/texto1.html HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
+--- RESPONSE ---
+
+HTTP/1.1 200 OK
+Date: Mon, 24 Oct 2016 23:36:16 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 69
+Last-Modified: Mon, 24 Oct 2016 23:16:10 BRST
+
+********************************************************************
+--- REQUEST ---
+
+GET /dir1/texto2.html HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
+--- RESPONSE ---
+
+HTTP/1.1 403 FORBIDDEN
+Date: Mon, 24 Oct 2016 23:36:19 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 69
+
+********************************************************************
+--- REQUEST ---
+
+GET / HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
+--- RESPONSE ---
+
+HTTP/1.1 403 FORBIDDEN
+Date: Mon, 24 Oct 2016 23:36:22 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 204
+
+********************************************************************
+--- REQUEST ---
+
+GET HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
+--- RESPONSE ---
+
+HTTP/1.1 400 BAD REQUEST
+Date: Mon, 24 Oct 2016 23:36:25 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: close
+Content-Type: text/html
+
+********************************************************************
+--- REQUEST ---
+
+DELETE / HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
+--- RESPONSE ---
+
+HTTP/1.1 405 NOT ALLOWED
+Date: Mon, 24 Oct 2016 23:36:28 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+
+********************************************************************
+--- REQUEST ---
+
+CUSTOM / HTTP/1.1
+Host: localhost:8888
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-us
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.8 (KHTML, like Gecko) Version/9.1.3 Safari/601.7.8
+
+
+
+
+
+--- RESPONSE ---
+
+HTTP/1.1 501 NOT IMPLEMENTED
+Date: Mon, 24 Oct 2016 23:36:32 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+
 ********************************************************************

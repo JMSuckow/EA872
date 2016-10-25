@@ -1,0 +1,13 @@
+HTTP/1.1 403 FORBIDDEN
+Date: Mon, 24 Oct 2016 23:36:19 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 69
+
+
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+</body></html>

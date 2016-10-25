@@ -43,6 +43,10 @@ entrada:   comando DOIS_PONTOS texto BREAK{add_cmd($1,$3);}
             {char* string =malloc(sizeof(char)*(strlen($3)+strlen($5)+2));
                 strcpy(string,$3); strcat(string,"~"); strcat(string,$5);
                 add_cmd($1,string);}
+    |        STRING WHITESPACE STRING WHITESPACE STRING BREAK
+            {char* string =malloc(sizeof(char)*(strlen($3)+strlen($5)+2));
+                strcpy(string,$3); strcat(string,"~"); strcat(string,$5);
+                add_cmd($1,string);}
     |       BREAK   {$$ = "\n";}
 ;
 
@@ -77,6 +81,10 @@ texto:  WHITESPACE texto    {$$ = $2;}
     
     return 0;
 }*/
+
+yyerror(char const *s){
+    requestList = NULL;
+}
 
 void add_cmd(char* name, char* params){
     

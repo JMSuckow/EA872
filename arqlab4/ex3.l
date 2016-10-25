@@ -6,6 +6,7 @@
 
 WHITESPACE [\t ]+
 BREAK_LINE  [\n]
+//STRING	[^:\n \r\t]*
 STRING	[^,:\n \r\t]*
 REQ ^(GET|POST|OPTIONS|HEAD)
 
@@ -16,6 +17,8 @@ REQ ^(GET|POST|OPTIONS|HEAD)
 {WHITESPACE} return WHITESPACE;
 
 {BREAK_LINE} return BREAK;
+
+// [,](?![^\(]*\))
 
 [,]		{yylval.chr = yytext[0];
 		 return VIRGULA;

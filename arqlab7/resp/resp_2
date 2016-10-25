@@ -1,0 +1,13 @@
+HTTP/1.1 404 NOT FOUND
+Date: Mon, 24 Oct 2016 23:36:14 BRST
+Server: Servidor HTTP ver 0.1 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 68
+
+
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+</body></html>
