@@ -1,0 +1,145 @@
+--- REQUEST ---
+
+GET / HTTP/1.1
+Host: localhost:8889
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:42.0) Gecko/20100101 Firefox/42.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+--- RESPONSE ---
+
+HTTP/1.1 200 OK
+Date: Wed, 26 Oct 2016 13:36:51 BRST
+Server: Servidor HTTP ver 0.2 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 76
+Last-Modified: Wed, 26 Oct 2016 08:17:16 BRST
+
+********************************************************************
+--- REQUEST ---
+
+GET /favicon.ico HTTP/1.1
+Host: localhost:8889
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:42.0) Gecko/20100101 Firefox/42.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+--- RESPONSE ---
+
+HTTP/1.1 404 NOT FOUND
+Date: Wed, 26 Oct 2016 13:36:51 BRST
+Server: Servidor HTTP ver 0.2 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 94
+
+********************************************************************
+--- REQUEST ---
+
+GET /dir1/texto1.html HTTP/1.1
+Host: localhost:8889
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:42.0) Gecko/20100101 Firefox/42.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+--- RESPONSE ---
+
+HTTP/1.1 200 OK
+Date: Wed, 26 Oct 2016 13:47:11 BRST
+Server: Servidor HTTP ver 0.2 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 69
+Last-Modified: Wed, 26 Oct 2016 08:17:16 BRST
+
+********************************************************************
+--- REQUEST ---
+
+GET /index.html HTTP/1.1
+Host: localhost:8889
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:42.0) Gecko/20100101 Firefox/42.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+--- RESPONSE ---
+
+HTTP/1.1 200 OK
+Date: Wed, 26 Oct 2016 13:47:35 BRST
+Server: Servidor HTTP ver 0.2 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 76
+Last-Modified: Wed, 26 Oct 2016 08:17:16 BRST
+
+********************************************************************
+--- REQUEST ---
+
+GET /dir1/texto2.html HTTP/1.1
+Host: localhost:8889
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:42.0) Gecko/20100101 Firefox/42.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+--- RESPONSE ---
+
+HTTP/1.1 403 FORBIDDEN
+Date: Wed, 26 Oct 2016 13:51:24 BRST
+Server: Servidor HTTP ver 0.2 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 94
+
+********************************************************************
+--- REQUEST ---
+
+GET /dir1/ HTTP/1.1
+Host: localhost:8889
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:42.0) Gecko/20100101 Firefox/42.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+
+--- RESPONSE ---
+
+HTTP/1.1 404 NOT FOUND
+Date: Wed, 26 Oct 2016 13:52:01 BRST
+Server: Servidor HTTP ver 0.2 de Joao Marcos 
+Connection: keep-alive
+Content-Type: text/html
+Content-Length: 94
+
+********************************************************************
+--- REQUEST ---
+
+GET /dir1/../../aula HTTP/1.1
+HOST: localhost:8889
+
+
+--- RESPONSE ---
+
+HTTP/1.1 403 FORBIDDEN
+Date: Wed, 26 Oct 2016 13:52:43 BRST
+Server: Servidor HTTP ver 0.2 de Joao Marcos 
+Connection: close
+Content-Type: text/html
+Content-Length: 94
+
+********************************************************************
