@@ -31,7 +31,7 @@ static char serverRoot[256];
 #define FORBIDDEN 403
 #define NOT_ALLOWED 405
 #define NOT_IMPLEMENTED 501
-#define SERVICE_UNAVAIABLE 503
+#define SERVICE_UNAVAILABLE 503
 
 
 static char *resourcePath;
@@ -139,8 +139,8 @@ char* buildResponse(HttpRequestList *requestList, char *request, int responseCod
         case NOT_IMPLEMENTED:
             lenght += sprintf(response+lenght, "NOT IMPLEMENTED\r\n");
             break;
-        case SERVICE_UNAVAIABLE:
-            lenght += sprintf(response+lenght, "SERVICE UNAVAIABLE\r\n");
+        case SERVICE_UNAVAILABLE:
+            lenght += sprintf(response+lenght, "SERVICE UNAVAILABLE\r\n");
             break;
 	}
 
@@ -167,9 +167,9 @@ char* buildResponse(HttpRequestList *requestList, char *request, int responseCod
         
     }
 
-    else if(responseCode == SERVICE_UNAVAIABLE){
+    else if(responseCode == SERVICE_UNAVAILABLE){
 
-        lenght += sprintf(response+lenght, "\n\n<html><head>\r\n<title>503 Service Unavaiable</title>\r\n</head><body>\r\n<h1>Service Unavaiable</h1>\r\n</body></html>");
+        lenght += sprintf(response+lenght, "\n\n<html><head>\r\n<title>503 Service Unavailable</title>\r\n</head><body>\r\n<h1>Service Unavailable</h1>\r\n</body></html>");
 
     }
     else if (strcmp(request,"GET")==0 || strcmp(request,"HEAD")==0 )
@@ -479,7 +479,7 @@ void process_request(int novo_soquete, FILE *log){
 
             int mensagem_compr = recv(novo_soquete, area, sizeof(area), 0);
         
-             printf("%s",area);
+             // printf("%s",area);
 
             HttpRequestList *requestList;
             char* response;
@@ -496,7 +496,7 @@ void process_request(int novo_soquete, FILE *log){
                 
                 write(novo_soquete, response, strlen(response)+1);
 
-                printf("%s",response);
+                // printf("%s",response);
 
             }
             else{ // ERROR Bad Request
@@ -540,7 +540,7 @@ void process_request(int novo_soquete, FILE *log){
                 errno = 0;
                 socket_value = select(novo_soquete + 1, &fdset, NULL, NULL, &tv);
 
-                printf("%d ->SOQUETE %d\n",socket_value,errno);
+                // printf("%d ->SOQUETE %d\n",socket_value,errno);
 
                 if(socket_value < 0)
                     continue;
@@ -573,6 +573,8 @@ int main(int argc, char **argv)
     int port = atoi(argv[1]);
 
     int N = atoi(argv[4]);
+
+    printf("%d",N);
 
     process_counter = 0;
     
@@ -660,7 +662,7 @@ int main(int argc, char **argv)
                 }
 
             }else{  //Reached server's limit of connections
-                char* response = buildResponse(NULL, "", SERVICE_UNAVAIABLE);
+                char* response = buildResponse(NULL, "", SERVICE_UNAVAILABLE);
                 write(novo_soquete, response, strlen(response)+1);
                 close(novo_soquete);
 
