@@ -462,7 +462,7 @@ int main(int argc, char **argv)
             //httpParser_printRequestList(requestList);
         }
         else{ // ERROR Bad Request
-            httpServer_answerRequest(NULL);
+            response = httpServer_answerRequest(NULL);
         }
         
         yy_delete_buffer(str_buffer); // free up memory
@@ -479,8 +479,8 @@ int main(int argc, char **argv)
         int i;
         for(i=0; i < 1024; i++)
             area[i] = 0;
-        
-        free(response);
+        if(response != NULL)
+        		free(response);
 
         
     }  // Laço termina aqui
