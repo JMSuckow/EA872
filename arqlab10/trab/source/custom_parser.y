@@ -212,7 +212,10 @@ Params* httpParser_getParams(HttpCmds cmd){
             default: break;
         }
         
-        HttpRequestList* cmd = requestList->next;
+
+	HttpRequestList* cmd = NULL;
+	if(requestList != NULL)
+        	cmd = requestList->next;
         
         while(cmd != NULL){
             

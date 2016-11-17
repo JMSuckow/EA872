@@ -181,10 +181,10 @@ char* buildResponse(HttpRequestList *requestList, char *request, int responseCod
                     char buff[1024];
                     FILE *resource = fopen( resourcePath, "r" );
                     
-                    char* buffer = (char*) malloc (sizeof(char)*(int)statbuff.st_size);
+                    char* buffer = (char*) malloc (sizeof(char)*((int)statbuff.st_size + 1));
                     if (buffer)
                     {
-                        fread (buffer, (int)statbuff.st_size, 1, resource);
+                        fread (buffer, (int)statbuff.st_size +1 , 1, resource);
                         strcat(response,buffer);
                     }
                     fclose(resource);
@@ -263,7 +263,7 @@ int testResource(char *serverRoot, char *resource)
     char* token = strtok(resource, "/");
     
     char* tmp = (char *)malloc(resourceSize*sizeof(char));
-    char* rootUp = (char *)malloc((strlen(serverRoot)+3)*sizeof(char));
+    char* rootUp = (char *)malloc((strlen(serverRoot)+5)*sizeof(char));
     sprintf(tmp, "%s/%s", serverRoot, token);
     sprintf(rootUp, "%s/../", serverRoot);
     struct stat dirStat;
@@ -327,11 +327,11 @@ int testResource(char *serverRoot, char *resource)
             }
             
             if (indexStat.st_mode & S_IRUSR){
-                resourcePath = (char *)realloc(resourcePath,strlen(strIndex)*sizeof(char));
+                resourcePath = (char *)realloc(resourcePath,(strlen(strIndex)+1)*sizeof(char));
                 strcpy(resourcePath,strIndex);
                 return OK;
             }else if (welcomeStat.st_mode & S_IRUSR){
-                resourcePath = (char *)realloc(resourcePath,strlen(strWelcome)*sizeof(char));
+                resourcePath = (char *)realloc(resourcePath,(strlen(strWelcome)+1)*sizeof(char));
                 strcpy(resourcePath,strWelcome);
                 return OK;
             }
@@ -479,7 +479,7 @@ void* process_request(void* arg){
                 pthread_exit(NULL);
             }
             
-            sleep(5);
+            // sleep(5);
 
             yy_delete_buffer(str_buffer); // free up memory
 
@@ -553,10 +553,10 @@ int count_active_threads(char* thread_flags, int N){
     return active_threads;
 }
 
-/* Function on_exit()
+/* Function onExit()
 * Close the socket when the program is terminated 
 */
-static void on_exit(void){
+static void onExit(void){
     close(soquete);
     fclose(logFile);
 }
@@ -582,8 +582,8 @@ int main(int argc, char **argv)
 
     httpServer_initSocket(port);
     
-    //Set up function on_exit
-    atexit(on_exit);
+    //Set up function onExit
+    atexit(onExit);
 
 
     struct sockaddr_in cliente;		/* estrutura de informações sobre os clientes	*/
@@ -612,7 +612,7 @@ int main(int argc, char **argv)
 
         int thread_count = count_active_threads(thread_flags, N);
 
-        printf("%d", thread_count);
+       // printf("%d", thread_count);
 
         if(socket_value < 0){   // Error during select  
             continue;
