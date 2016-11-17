@@ -1,12 +1,12 @@
 all: source/custom_parser.y source/custom_parser.l source/servidor.c
 	bison -d source/custom_parser.y -o source/custom_parser.tab.c
 	flex -o source/lex.yy.c source/custom_parser.l 
-	gcc -o bin/servidor source/servidor.c source/custom_parser.tab.c source/lex.yy.c -ly -ll
+	gcc -o bin/servidor source/servidor.c source/custom_parser.tab.c source/lex.yy.c -ly -ll -lpthread
 
 linux: source/custom_parser.y source/custom_parser.l source/servidor.c
 	bison -d source/custom_parser.y -o source/custom_parser.tab.c
 	flex -o source/lex.yy.c source/custom_parser.l 
-	gcc -o bin/servidor source/servidor.c source/custom_parser.tab.c source/lex.yy.c -ly -lfl
+	gcc -g -o bin/servidor source/servidor.c source/custom_parser.tab.c source/lex.yy.c -ly -lfl -lpthread
 
 clear:
 	rm -rf bin 

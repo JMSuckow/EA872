@@ -183,10 +183,10 @@ char* buildResponse(HttpRequestList *requestList, char *request, int responseCod
                     char buff[1024];
                     FILE *resource = fopen( resourcePath, "r" );
                     
-                    char* buffer = (char*) malloc (sizeof(char)*(int)statbuff.st_size);
+                    char* buffer = (char*) malloc (sizeof(char)*((int)statbuff.st_size + 1));
                     if (buffer)
                     {
-                        fread (buffer, (int)statbuff.st_size, 1, resource);
+                        fread (buffer, (int)statbuff.st_size +1 , 1, resource);
                         strcat(response,buffer);
                     }
                     fclose(resource);
@@ -265,7 +265,7 @@ int testResource(char *serverRoot, char *resource)
     char* token = strtok(resource, "/");
     
     char* tmp = (char *)malloc(resourceSize*sizeof(char));
-    char* rootUp = (char *)malloc((strlen(serverRoot)+3)*sizeof(char));
+    char* rootUp = (char *)malloc((strlen(serverRoot)+5)*sizeof(char));
     sprintf(tmp, "%s/%s", serverRoot, token);
     sprintf(rootUp, "%s/../", serverRoot);
     struct stat dirStat;
@@ -329,11 +329,11 @@ int testResource(char *serverRoot, char *resource)
             }
             
             if (indexStat.st_mode & S_IRUSR){
-                resourcePath = (char *)realloc(resourcePath,strlen(strIndex)*sizeof(char));
+                resourcePath = (char *)realloc(resourcePath,(strlen(strIndex)+1)*sizeof(char));
                 strcpy(resourcePath,strIndex);
                 return OK;
             }else if (welcomeStat.st_mode & S_IRUSR){
-                resourcePath = (char *)realloc(resourcePath,strlen(strWelcome)*sizeof(char));
+                resourcePath = (char *)realloc(resourcePath,(strlen(strWelcome)+1)*sizeof(char));
                 strcpy(resourcePath,strWelcome);
                 return OK;
             }
@@ -627,8 +627,6 @@ int main(int argc, char **argv)
         }while(errno==EINTR);
 
         int thread_count = count_active_threads(thread_flags, N);
-
-        // printf("%d", thread_count);
 
         if(socket_value < 0){   // Error during select  
             continue;
