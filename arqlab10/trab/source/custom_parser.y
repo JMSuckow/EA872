@@ -28,6 +28,7 @@ void add_param(char *str);
 %token <str> STRING
 %token <str> REQUEST
 %token <chr> BREAK
+//%token <str> END
 
 %type <str> entrada comando texto input
 
@@ -48,6 +49,7 @@ entrada:   comando DOIS_PONTOS texto BREAK{add_cmd($1,$3);}
                 strcpy(string,$3); strcat(string,"~"); strcat(string,$5);
                 add_cmd($1,string);}
     |       BREAK   {$$ = "\n";}
+  //  |	    END {$$ = "";}
 ;
 
 comando :   STRING WHITESPACE comando {char* string =malloc(sizeof(char)*(strlen($1)+strlen($3)+2));

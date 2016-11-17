@@ -460,6 +460,8 @@ void* process_request(void* arg){
             httpParser_cleanRequestList();
             
             if(!yyparse()){
+		yy_delete_buffer(str_buffer); // free up memory
+
                 requestList = httpParser_getRequestList();
                 response = httpServer_answerRequest(requestList);
                 
@@ -469,6 +471,9 @@ void* process_request(void* arg){
 
             }
             else{ // ERROR Bad Request
+
+		yy_delete_buffer(str_buffer); // free up memory		
+
                 response = httpServer_answerRequest(NULL);
 
                 write(novo_soquete, response, strlen(response)+1);
@@ -481,7 +486,7 @@ void* process_request(void* arg){
             
             // sleep(5);
 
-            yy_delete_buffer(str_buffer); // free up memory
+            
 
             if(requestList != NULL && httpParser_getParams(CONNECTION) != NULL){
                 if(!strcmp(httpParser_getParams(CONNECTION)->param, "close")){
