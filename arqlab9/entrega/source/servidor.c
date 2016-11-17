@@ -92,7 +92,7 @@ void httpServer_setServerRoot(char *root)
  *	int port: socket's port of communication
  */
 
-void httpServer_initSocket(int port)
+void httpServer_initSocket(int port, int N)
 {
     struct sockaddr_in servidor;	/* estrutura de informações sobre o servidor	*/
     
@@ -103,7 +103,7 @@ void httpServer_initSocket(int port)
     
     bind(soquete, (struct sockaddr *)&servidor, sizeof(servidor));
          
-    listen(soquete, 5);
+    listen(soquete, 3*N);
 }
 
 /* Function buildResponse()
@@ -440,8 +440,8 @@ void httpServer_addToLog(FILE* log, char* request, char* response)
 *   signal_number : # of SIGCHLD
 */
 void decrement_process (int signal_number) {
-    // int status; 
-    // status = wait (NULL); 
+     int status; 
+     status = wait (NULL); 
     // printf("Alguem saiu: %d\n", status);
 
     if(process_counter == 1){
@@ -503,6 +503,14 @@ void process_request(int novo_soquete, FILE *log){
                 response = httpServer_answerRequest(NULL);
 
                 write(novo_soquete, response, strlen(response)+1);
+                
+                char* request = (char*)malloc(sizeof(char)*1024);
+                request = strdup(area);
+                
+                httpServer_addToLog(log, request, response);
+                
+                if(response != NULL)
+                    free(response);
 
                 close(novo_soquete);
                 exit(0);
@@ -559,10 +567,10 @@ void process_request(int novo_soquete, FILE *log){
 }
 
 
-/* Function on_exit()
+/* Function onExit()
 * Close the socket when the program is terminated 
 */
-static void on_exit(void){
+static void onExit(void){
     if(main_process)
         close(soquete);
 }
@@ -574,7 +582,7 @@ int main(int argc, char **argv)
 
     int N = atoi(argv[4]);
 
-    printf("%d",N);
+    // printf("%d",N);
 
     process_counter = 0;
     
@@ -593,10 +601,10 @@ int main(int argc, char **argv)
 
     }
 
-    httpServer_initSocket(port);
+    httpServer_initSocket(port, N);
     
-    //Set up function on_exit
-    atexit(on_exit);
+    //Set up function onExit
+    atexit(onExit);
 
 
     struct sockaddr_in cliente;		/* estrutura de informações sobre os clientes	*/

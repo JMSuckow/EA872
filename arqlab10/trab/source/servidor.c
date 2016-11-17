@@ -58,6 +58,8 @@ typedef struct thread_data{
 
 FILE *logFile;
 
+pthread_mutex_t log_mutex;
+
 /* Function setServerRoot()
 * Sets the server's root directory
 *
@@ -77,7 +79,7 @@ void httpServer_setServerRoot(char *root)
  *	int port: socket's port of communication
  */
 
-void httpServer_initSocket(int port)
+void httpServer_initSocket(int port, int N)
 {
     struct sockaddr_in servidor;	/* estrutura de informações sobre o servidor	*/
     
@@ -88,7 +90,7 @@ void httpServer_initSocket(int port)
     
     bind(soquete, (struct sockaddr *)&servidor, sizeof(servidor));
          
-    listen(soquete, 5);
+    listen(soquete, 3*N);
 }
 
 /* Function buildResponse()
@@ -391,6 +393,8 @@ char* httpServer_answerRequest(HttpRequestList *requestList)
 void httpServer_addToLog(FILE* logFile, char* request, char* response)
 {
 
+    pthread_mutex_lock(&log_mutex);
+
     fflush(logFile);
 	fprintf(logFile, "--- REQUEST ---\r\n\r\n");
 
@@ -406,14 +410,18 @@ void httpServer_addToLog(FILE* logFile, char* request, char* response)
             limit = i+1; break;
         }
     }
+
     if(limit == lenght-1){
         fprintf(logFile, "%s", response);
     }else{
         response[limit] = 0;
         fprintf(logFile, "%s", response);
     }
+
 	
 	fprintf(logFile,"\n********************************************************************\r\n");
+
+    pthread_mutex_unlock(&log_mutex);
 }
 
 /* Function process_request()
@@ -425,6 +433,9 @@ void httpServer_addToLog(FILE* logFile, char* request, char* response)
 void* process_request(void* arg){
 
     thread_data* data = (thread_data*) arg;
+
+    if(data == NULL)
+        pthread_exit(NULL);
 
     int novo_soquete = data->novo_soquete;
 
@@ -448,7 +459,7 @@ void* process_request(void* arg){
 
             int mensagem_compr = recv(novo_soquete, area, sizeof(area), 0);
         
-             // printf("%s",area);
+             printf("\n%d\n",mensagem_compr);
 
             HttpRequestList *requestList;
             char* response;
@@ -473,13 +484,18 @@ void* process_request(void* arg){
 
                 write(novo_soquete, response, strlen(response)+1);
 
+                char* request = (char*)malloc(sizeof(char)*1024);
+                request = strdup(area);
+                
+                httpServer_addToLog(logFile, request, response);
+
                 close(novo_soquete);
                 *(flag_address) = NOT_OCCUPIED;
                 free(data);
                 pthread_exit(NULL);
             }
             
-            sleep(5);
+            // sleep(5);
 
             yy_delete_buffer(str_buffer); // free up memory
 
@@ -553,10 +569,10 @@ int count_active_threads(char* thread_flags, int N){
     return active_threads;
 }
 
-/* Function on_exit()
+/* Function onExit()
 * Close the socket when the program is terminated 
 */
-static void on_exit(void){
+static void onExit(void){
     close(soquete);
     fclose(logFile);
 }
@@ -580,10 +596,10 @@ int main(int argc, char **argv)
 
 	logFile = fopen(argv[3], "a");
 
-    httpServer_initSocket(port);
+    httpServer_initSocket(port, N);
     
-    //Set up function on_exit
-    atexit(on_exit);
+    //Set up function onExit
+    atexit(onExit);
 
 
     struct sockaddr_in cliente;		/* estrutura de informações sobre os clientes	*/
@@ -612,7 +628,7 @@ int main(int argc, char **argv)
 
         int thread_count = count_active_threads(thread_flags, N);
 
-        printf("%d", thread_count);
+        // printf("%d", thread_count);
 
         if(socket_value < 0){   // Error during select  
             continue;
@@ -642,8 +658,15 @@ int main(int argc, char **argv)
 
                 thread_data* data = (thread_data*) malloc(sizeof(thread_data));
 
+                if(data == NULL)
+                    continue;
+
                 data->novo_soquete = novo_soquete;
                 data->occupied = find_next_unnocupied_thread(thread_flags, N);
+
+                if(data->occupied == NULL)
+                    continue;
+                
                 *(data->occupied) = OCCUPIED;
 
                 pthread_create(&id, NULL, &process_request, (void*) data);
