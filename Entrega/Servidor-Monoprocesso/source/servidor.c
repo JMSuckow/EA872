@@ -12,8 +12,6 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
 
 
 #include "custom_parser.h"
@@ -31,7 +29,6 @@ static char serverRoot[256];
 #define FORBIDDEN 403
 #define NOT_ALLOWED 405
 #define NOT_IMPLEMENTED 501
-#define SERVICE_UNAVAIABLE 503
 
 
 static char *resourcePath;
@@ -42,10 +39,6 @@ typedef struct yy_buffer_state * YY_BUFFER_STATE;
 extern int yyparse();
 extern YY_BUFFER_STATE yy_scan_string(char * str);
 extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
-
-volatile sig_atomic_t process_counter = 0;
-volatile sig_atomic_t flag = 0;
-char main_process = 1;
 
 //Funcao para ler e imprimir na saida padrao do sistema o conteúdo do arquivo
 void read_and_print_file(char* file_string, struct stat fileStat){
@@ -139,9 +132,6 @@ char* buildResponse(HttpRequestList *requestList, char *request, int responseCod
         case NOT_IMPLEMENTED:
             lenght += sprintf(response+lenght, "NOT IMPLEMENTED\r\n");
             break;
-        case SERVICE_UNAVAIABLE:
-            lenght += sprintf(response+lenght, "SERVICE UNAVAIABLE\r\n");
-            break;
 	}
 
     time_t rawtime;
@@ -152,7 +142,7 @@ char* buildResponse(HttpRequestList *requestList, char *request, int responseCod
     strftime(buf,80,"%a, %d %b %Y %H:%M:%S %Z", localtime( &rawtime ));
 	lenght += sprintf(response+lenght, "Date: %s\r\n", buf);
 
-	lenght += sprintf(response+lenght, "Server: Servidor HTTP ver 0.3 de Joao Marcos \r\n");
+	lenght += sprintf(response+lenght, "Server: Servidor HTTP ver 0.2 de Joao Marcos \r\n");
 
 	if(requestList != NULL && httpParser_getParams(CONNECTION) != NULL)
         lenght += sprintf(response+lenght, "Connection: %s\r\n", httpParser_getParams(CONNECTION)->param);
@@ -165,12 +155,6 @@ char* buildResponse(HttpRequestList *requestList, char *request, int responseCod
         
         lenght += sprintf(response+lenght, "\n\n<html><head>\r\n<title>400 Bad Request</title>\r\n</head><body>\r\n<h1>Bad Request</h1>\r\n</body></html>");
         
-    }
-
-    else if(responseCode == SERVICE_UNAVAIABLE){
-
-        lenght += sprintf(response+lenght, "\n\n<html><head>\r\n<title>503 Service Unavaiable</title>\r\n</head><body>\r\n<h1>Service Unavaiable</h1>\r\n</body></html>");
-
     }
     else if (strcmp(request,"GET")==0 || strcmp(request,"HEAD")==0 )
 	{
@@ -359,7 +343,7 @@ int testResource(char *serverRoot, char *resource)
 }
 
 /* Function server_answerRequest()
-* Answer a given request
+* Answera a given a request
 *
 * Parameters:
 *	requestList: request to be answered
@@ -431,249 +415,77 @@ void httpServer_addToLog(FILE* log, char* request, char* response)
 	fprintf(log,"\n********************************************************************\r\n");
 }
 
-
-/* Function decrement_process()
-* Method for handling SIGCHLD when a child process is finished.
-* Decrements by one the global variable process_counter in order to keep track of how many child process are live
-*
-* Parameters:
-*   signal_number : # of SIGCHLD
-*/
-void decrement_process (int signal_number) {
-    // int status; 
-    // status = wait (NULL); 
-    // printf("Alguem saiu: %d\n", status);
-
-    if(process_counter == 1){
-        process_counter = 0;
-    }
-    else{
-        process_counter--;
-    }
-} 
-
-/* Function process_request()
-* Process a request and builds a response to it. 
-*
-* Parameters:
-*   novo_soquete : socket number created by the accpet method
-*   log : log file
-*/
-void process_request(int novo_soquete, FILE *log){
-
-    fd_set fdset;
-    struct timeval tv;
-    
-    int socket_value = 1;
-
-    char area[1024];  
-
-    while(1){
-        int i;
-        for(i=0; i < 1024; i++)
-            area[i] = 0;        
-
-        if(socket_value == 1){
-
-            socket_value = 0;
-
-            int mensagem_compr = recv(novo_soquete, area, sizeof(area), 0);
-        
-             printf("%s",area);
-
-            HttpRequestList *requestList;
-            char* response;
-
-            YY_BUFFER_STATE str_buffer = yy_scan_string(area);
-            
-            // now all scanning and parsing
-            // call parser
-            httpParser_cleanRequestList();
-            
-            if(!yyparse()){
-                requestList = httpParser_getRequestList();
-                response = httpServer_answerRequest(requestList);
-                
-                write(novo_soquete, response, strlen(response)+1);
-
-                printf("%s",response);
-
-            }
-            else{ // ERROR Bad Request
-                response = httpServer_answerRequest(NULL);
-
-                write(novo_soquete, response, strlen(response)+1);
-
-                close(novo_soquete);
-                exit(0);
-            }
-            
-            // sleep(5);
-
-            yy_delete_buffer(str_buffer); // free up memory
-
-            if(requestList != NULL && httpParser_getParams(CONNECTION) != NULL){
-                if(!strcmp(httpParser_getParams(CONNECTION)->param, "close")){
-                    close(novo_soquete);
-                    exit(0);
-                }
-
-            }
-            
-            char* request = (char*)malloc(sizeof(char)*1024);
-            request = strdup(area);
-            
-            httpServer_addToLog(log, request, response);
-            
-            if(response != NULL)
-                free(response);
-
-
-            /* Mantains connection alive until a timeout of 10s without connectivity is reached */
-
-            FD_ZERO(&fdset);
-            FD_SET(novo_soquete, &fdset);
-            tv.tv_sec = 10;             /* 10 segundos timeout */
-            tv.tv_usec = 0;
-
-            do{
-                errno = 0;
-                socket_value = select(novo_soquete + 1, &fdset, NULL, NULL, &tv);
-
-                printf("%d ->SOQUETE %d\n",socket_value,errno);
-
-                if(socket_value < 0)
-                    continue;
-
-                if(socket_value == 0){
-                    close(novo_soquete);
-                    exit(0);
-                }
-
-            }while(errno==EINTR);
-
-        }
-
-    }
-
-}
-
-
-/* Function onExit()
-* Close the socket when the program is terminated 
-*/
-static void onExit(void){
-    if(main_process)
-        close(soquete);
-}
-
 int main(int argc, char **argv)
 { 
+	HttpRequestList *requestList;
+	FILE *log;
 
     int port = atoi(argv[1]);
-
-    int N = atoi(argv[4]);
-
-    process_counter = 0;
     
 	// prepare webspace 
 	httpServer_setServerRoot(argv[2]);
-    FILE *log;
+
 	log = fopen(argv[3], "a");
     
-    //Set up SIGCHLD handler
-    struct sigaction act;
-    act.sa_handler= decrement_process;
-    act.sa_flags = SA_RESTART;
-    if(sigaction(SIGCHLD,&act,NULL) == -1){
-
-        printf("Handle Error");
-
-    }
-
     httpServer_initSocket(port);
-    
-    //Set up function onExit
-    atexit(onExit);
 
-
+    char area[1024];			/* area para envio e recebimento de dados	*/
     struct sockaddr_in cliente;		/* estrutura de informações sobre os clientes	*/
     int novo_soquete;			/* soquete de conexão aos clientes		*/
-    int nome_compr;			/* comprimento do nome de um cliente		*/   
-
-
-    // Set up a timout of 15s without connectivity 
-    fd_set fdset;
-    struct timeval tv;
+    int nome_compr;			/* comprimento do nome de um cliente		*/
+    int mensagem_compr;			/* comprimento da mensagem recebida		*/
     
-    FD_ZERO(&fdset);
-    FD_SET(soquete, &fdset);
-    tv.tv_sec = 15;             /* 15 segundos timeout */
-    tv.tv_usec = 0;
-
+    
     while (1) {
+        
+        nome_compr = sizeof(cliente);
+        novo_soquete = accept(soquete, (struct sockaddr *)&cliente, &nome_compr);
 
-        int socket_value;
+        mensagem_compr = recv(novo_soquete, area, sizeof(area), 0);
+        
+        //printf("\n%s\n\n",area);
+    
+        char* response;
 
-        do{
-            errno = 0;
-            socket_value = select(soquete+1, &fdset, NULL, NULL, &tv);
-
-        }while(errno==EINTR);
-
-        if(socket_value < 0){   // Error during select  
-            continue;
-        }
-        else if(socket_value == 0 && process_counter == 0){     //No socket for reading
-
-            exit(0);
-
-        }
-        else if(socket_value == 0 && process_counter != 0){     //No socket for reading but child connections are still open
-
-            continue;
-
-        }
-        else{   //Exists a new connection
-
-            nome_compr = sizeof(cliente);
-            novo_soquete = accept(soquete, (struct sockaddr *)&cliente, &nome_compr);
-
-            if(novo_soquete <= 0){
-                continue;
-            }
-
-            if(process_counter < N){
-                process_counter++;
-
-                if(!fork()){    //Child Process
-
-
-                    main_process = 0;
-                    process_request(novo_soquete, log);
-
-
-                }else{  
-
-                    //Parent Process
-
-                }
-
-            }else{  //Reached server's limit of connections
-                char* response = buildResponse(NULL, "", SERVICE_UNAVAIABLE);
-                write(novo_soquete, response, strlen(response)+1);
-                close(novo_soquete);
-
-            }
-
-        }
-
+        YY_BUFFER_STATE str_buffer = yy_scan_string(area);
+        
+        // now all scanning and parsing
+        // call parser
+        httpParser_cleanRequestList();
+        
+        if(!yyparse())
+        {
+            requestList = httpParser_getRequestList();
+            response = httpServer_answerRequest(requestList);
             
+            write(novo_soquete, response, strlen(response)+1);
+            //httpParser_printRequestList(requestList);
+        }
+        else{ // ERROR Bad Request
+            response = httpServer_answerRequest(NULL);
+        }
+        
+        yy_delete_buffer(str_buffer); // free up memory
+
+        close(novo_soquete);
+        
+        char* request = (char*)malloc(sizeof(char)*1024);
+        request = strdup(area);
+        
+        printf("%s\n%s\n",request,response);
+        
+        httpServer_addToLog(log, request, response);
+        
+        int i;
+        for(i=0; i < 1024; i++)
+            area[i] = 0;
+        if(response != NULL)
+        		free(response);
 
         
     }  // Laço termina aqui
     
-    
+    close(soquete);
     
     
 	
